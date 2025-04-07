@@ -4,8 +4,14 @@ import {
   setHighlightedQuote,
   toggleVisibility,
 } from '../state/quotesSlice'
+import {
+  useGetQuotesQuery,
+  useDeleteQuoteMutation,
+  useToggleFakeMutation
+} from '../state/quotesApi'
 
 export default function Quotes() {
+
   const quotes = [
     {
       id: 1,
@@ -13,6 +19,7 @@ export default function Quotes() {
       authorName: "Dr. Seuss",
       apocryphal: true,
     },
+
     {
       id: 2,
       quoteText: "So many books, so little time.",
@@ -29,6 +36,8 @@ export default function Quotes() {
   const displayAllQuotes = useSelector(st => st.quotesState.displayAllQuotes)
   const highlightedQuote = useSelector(st => st.quotesState.highlightedQuote)
   const dispatch = useDispatch()
+  const filteredQuotes = quotes.filter(q => displayAllQuotes || !q.apocryphal)
+  
   return (
     <div id="quotes">
       <h3>Quotes</h3>

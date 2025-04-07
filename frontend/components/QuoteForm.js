@@ -1,4 +1,5 @@
 import React, { useReducer } from 'react'
+import { useCreateQuoteMutation } from '../state/quotesApi'
 
 const CHANGE_INPUT = 'CHANGE_INPUT'
 const RESET_FORM = 'RESET_FORM'
@@ -15,7 +16,7 @@ const reducer = (state, action) => {
       return { ...state, [name]: value }
     }
     case RESET_FORM:
-      return { authorName: '', quoteText: '' }
+      return {initialState}
     default:
       return state
   }
@@ -23,15 +24,26 @@ const reducer = (state, action) => {
 
 export default function TodoForm() {
   const [state, dispatch] = useReducer(reducer, initialState)
+const [createQuote, {isLoading, error}] = useCreateQuoteMutation()
+
   const onChange = ({ target: { name, value } }) => {
     dispatch({ type: CHANGE_INPUT, payload: { name, value } })
   }
   const resetForm = () => {
     dispatch({ type: RESET_FORM })
   }
-  const onNewQuote = evt => {
+  const onNewQuote = async evt => {
     evt.preventDefault()
-    resetForm()
+    try {
+      await createQuote ({
+        quoteAuthor: state.authorName.trim(),
+        quoteText: state.quoteText
+      }).unwrap()
+      resetForm() 
+    } catch (err) {
+      //error handled below
+    }
+    
   }
 
   return (
@@ -61,6 +73,14 @@ export default function TodoForm() {
           disabled={!state.authorName.trim() || !state.quoteText.trim()}
         >DO IT!</button>
       </label>
+
+      {error?.status === 422 && (
+        <p className='error'>Author and Quote Text must be at least 3 characters long.</p>
+      )}
+
+      {error && error.status !== 422 && (
+        <p className='error'>Something went wrong. Try again</p>
+      )}
     </form>
   )
 }
